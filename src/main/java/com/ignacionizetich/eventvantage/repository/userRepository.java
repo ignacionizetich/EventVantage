@@ -1,18 +1,16 @@
 package com.ignacionizetich.eventvantage.repository;
 
 
-import com.ignacionizetich.eventvantage.entity.user;
+import com.ignacionizetich.eventvantage.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface userRepository extends JpaRepository<user, Long> {
+public interface userRepository extends JpaRepository<User, Long> {
 
 
-    Optional<user> findByEmail(String email);
-
+    Optional<User> findByEmail(String email);
 
 }

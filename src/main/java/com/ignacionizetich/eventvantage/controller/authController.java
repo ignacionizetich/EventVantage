@@ -1,10 +1,20 @@
 package com.ignacionizetich.eventvantage.controller;
 
+import com.ignacionizetich.eventvantage.DTO.requests.changePasswordRequestDTO;
+import com.ignacionizetich.eventvantage.DTO.requests.loginRequestDTO;
 import com.ignacionizetich.eventvantage.DTO.requests.userRequestDTO;
+import com.ignacionizetich.eventvantage.DTO.responses.changePasswordResponseDTO;
+import com.ignacionizetich.eventvantage.DTO.responses.loginResponseDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.userResponseDTO;
 import com.ignacionizetich.eventvantage.service.impl.userServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 
 @RestController
 @RequestMapping(value = "/api/v1/auth", produces = "application/json")
@@ -21,6 +31,27 @@ public class authController {
     @PostMapping("/register")
     public ResponseEntity<userResponseDTO> register(@RequestBody userRequestDTO request){
        return ResponseEntity.status(201).body(this.userService.createUser(request));
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<loginResponseDTO> login(@RequestBody loginRequestDTO request){
+        return ResponseEntity.status(200).body(this.userService.login(request));
+    }
+
+
+    @PutMapping("/changePassword")
+    public ResponseEntity<changePasswordResponseDTO> changePassword(@AuthenticationPrincipal UserDetails userDetails
+    , @RequestBody() changePasswordRequestDTO request){
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+            System.out.println("Auth: "+auth);
+            return ResponseEntity.status(200).body(this.userService.changePassword(userDetails.getUsername(),request));
+        } catch (UserPrincipalNotFoundException e) {
+            System.out.println(e.getMessage());
+        }
+       return null;
     }
 
 
