@@ -15,7 +15,7 @@ import com.ignacionizetich.eventvantage.service.userService;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -54,9 +54,6 @@ public class userServiceImpl implements userService {
         newUser.setDni(request.getDni());
         newUser.setPhoneNumber(request.getPhoneNumber());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-
-
-        System.out.println(newUser.getPassword());
 
         userRepository.save(newUser);
 
