@@ -7,10 +7,9 @@ import com.ignacionizetich.eventvantage.DTO.responses.changePasswordResponseDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.loginResponseDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.userResponseDTO;
 import com.ignacionizetich.eventvantage.service.impl.userServiceImpl;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,13 +28,13 @@ public class authController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<userResponseDTO> register(@RequestBody userRequestDTO request){
+    public ResponseEntity<userResponseDTO> register( @Valid @RequestBody userRequestDTO request){
        return ResponseEntity.status(201).body(this.userService.createUser(request));
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<loginResponseDTO> login(@RequestBody loginRequestDTO request){
+    public ResponseEntity<loginResponseDTO> login(@Valid @RequestBody loginRequestDTO request){
         return ResponseEntity.status(200).body(this.userService.login(request));
     }
 
@@ -44,9 +43,6 @@ public class authController {
     public ResponseEntity<changePasswordResponseDTO> changePassword(@AuthenticationPrincipal UserDetails userDetails
     , @RequestBody() changePasswordRequestDTO request){
         try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-            System.out.println("Auth: "+auth);
             return ResponseEntity.status(200).body(this.userService.changePassword(userDetails.getUsername(),request));
         } catch (UserPrincipalNotFoundException e) {
             System.out.println(e.getMessage());
