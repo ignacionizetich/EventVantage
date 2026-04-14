@@ -2,10 +2,13 @@ package com.ignacionizetich.eventvantage.controller;
 
 import com.ignacionizetich.eventvantage.DTO.requests.changePasswordRequestDTO;
 import com.ignacionizetich.eventvantage.DTO.requests.loginRequestDTO;
+import com.ignacionizetich.eventvantage.DTO.requests.updateProfileRequestDTO;
 import com.ignacionizetich.eventvantage.DTO.requests.userRequestDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.changePasswordResponseDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.loginResponseDTO;
+import com.ignacionizetich.eventvantage.DTO.responses.updateProfileResponseDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.userResponseDTO;
+import com.ignacionizetich.eventvantage.exception.custom.EmailAlreadyExistsException;
 import com.ignacionizetich.eventvantage.service.impl.userServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +32,13 @@ public class authController {
 
     @PostMapping("/register")
     public ResponseEntity<userResponseDTO> register( @Valid @RequestBody userRequestDTO request){
-       return ResponseEntity.status(201).body(this.userService.createUser(request));
+        try {
+            return ResponseEntity.status(201).body(this.userService.createUser(request));
+        }catch (EmailAlreadyExistsException e){
+            System.out.println("Ocurrio un error a la hora de registrar al usuario: "+ e.getMessage());
+
+        }
+       return ResponseEntity.status(400).body(new userResponseDTO(false, "We have a problem right here"));
     }
 
 
@@ -48,6 +57,12 @@ public class authController {
             System.out.println(e.getMessage());
         }
        return null;
+    }
+
+
+    @PutMapping("/update")
+    public ResponseEntity<updateProfileResponseDTO> updateProfile(@RequestBody updateProfileRequestDTO request){
+        return ResponseEntity.status(200).body(this.userService.updateProfile(request));
     }
 
 

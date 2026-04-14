@@ -3,22 +3,21 @@ package com.ignacionizetich.eventvantage.service.impl;
 
 import com.ignacionizetich.eventvantage.DTO.requests.changePasswordRequestDTO;
 import com.ignacionizetich.eventvantage.DTO.requests.loginRequestDTO;
+import com.ignacionizetich.eventvantage.DTO.requests.updateProfileRequestDTO;
 import com.ignacionizetich.eventvantage.DTO.requests.userRequestDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.changePasswordResponseDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.loginResponseDTO;
+import com.ignacionizetich.eventvantage.DTO.responses.updateProfileResponseDTO;
 import com.ignacionizetich.eventvantage.DTO.responses.userResponseDTO;
 import com.ignacionizetich.eventvantage.entity.User;
 import com.ignacionizetich.eventvantage.exception.custom.EmailAlreadyExistsException;
 import com.ignacionizetich.eventvantage.repository.userRepository;
 import com.ignacionizetich.eventvantage.security.JwtService;
 import com.ignacionizetich.eventvantage.service.userService;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.Optional;
 
@@ -29,18 +28,20 @@ public class userServiceImpl implements userService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final emailServiceImpl emailService;
 
 
-    public userServiceImpl(JwtService jwtService, userRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager) {
+    public userServiceImpl(JwtService jwtService, userRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, emailServiceImpl emailService) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
     }
 
 
     @Override
-    public userResponseDTO createUser(userRequestDTO request) {
+    public userResponseDTO createUser(userRequestDTO request) throws EmailAlreadyExistsException {
         Optional<User> user = this.userRepository.findByEmail(request.getEmail());
 
         if(user.isPresent()){
@@ -56,7 +57,7 @@ public class userServiceImpl implements userService {
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(newUser);
-
+        this.emailService.sendEmail(newUser.getEmail(), "Welcome to Eventvantage!", "Bienvenido a eventVantage, su cuenta ha sido creada exitosamente!");
         return new userResponseDTO(true, "Usuario creado correctamente");
     }
 
@@ -101,5 +102,22 @@ public class userServiceImpl implements userService {
                 .success(true)
                 .message("the password has been successfully changed!")
                 .build();
+    }
+
+    @Override
+    public updateProfileResponseDTO updateProfile(updateProfileRequestDTO request) {
+        Optional<User> userToBeUpdated = userRepository.findByEmail(request.getEmail());
+        User user = userToBeUpdated.orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if(request.getEmail() != null){
+            user.setEmail(request.getEmail());
+        }
+
+        if(request.getPhoneNumber() != null){
+            user.setPhoneNumber(request.getPhoneNumber());
+        }
+
+        userRepository.save(user);
+
+        return updateProfileResponseDTO.success();
     }
 }
